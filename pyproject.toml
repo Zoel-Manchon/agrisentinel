@@ -1,0 +1,36 @@
+[project]
+name = "agrisentinel"
+version = "0.1.0"
+description = "Smart rural IoT lab — crops, water & livestock telemetry with signed frames (HMAC), anti-replay and anomaly detection. Hexagonal, sim-first."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Zoel Manchón" }]
+dependencies = []
+
+[project.optional-dependencies]
+mqtt = ["paho-mqtt>=2.0"]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[build-system]
+requires = ["setuptools>=77.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["lab*", "runner*", "gateway*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B"]
+ignore = ["UP031"]
+
+[tool.ruff.lint.per-file-ignores]
+"lab/domain/*" = ["UP"]
+"lab/application/*" = ["UP"]

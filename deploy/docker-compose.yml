@@ -1,0 +1,53 @@
+name: agri-stack
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+    restart: unless-stopped
+
+  nodered:
+    image: nodered/node-red:latest
+    ports:
+      - "1880:1880"
+    volumes:
+      - nodered-data:/data
+    depends_on: [mosquitto, influxdb]
+    restart: unless-stopped
+
+  influxdb:
+    image: influxdb:2.7
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: agri
+      DOCKER_INFLUXDB_INIT_PASSWORD: agri-local-dev-only
+      DOCKER_INFLUXDB_INIT_ORG: agri
+      DOCKER_INFLUXDB_INIT_BUCKET: agri
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: agri-local-dev-token
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on: [influxdb]
+    restart: unless-stopped
+
+volumes:
+  mosquitto-data:
+  nodered-data:
+  influxdb-data:
+  grafana-data:

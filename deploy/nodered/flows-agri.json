@@ -1,0 +1,110 @@
+[
+  {
+    "id": "agri-tab",
+    "type": "tab",
+    "label": "AgriSentinel · telemetry + security",
+    "info": "Consumes clean telemetry (agri/+/+/state) and security alerts (agri/security/alerts), writing them to two InfluxDB measurements: 'telemetry' and 'alerts'. Requires node-red-contrib-influxdb."
+  },
+  {
+    "id": "agri-mqtt-state",
+    "type": "mqtt in",
+    "z": "agri-tab",
+    "name": "agri/+/+/state",
+    "topic": "agri/+/+/state",
+    "qos": "1",
+    "datatype": "json",
+    "broker": "agri-broker",
+    "x": 140,
+    "y": 120,
+    "wires": [["agri-fn-state"]]
+  },
+  {
+    "id": "agri-fn-state",
+    "type": "function",
+    "z": "agri-tab",
+    "name": "frame → telemetry point",
+    "func": "const f = msg.payload;\nconst fields = {};\nfor (const [name, r] of Object.entries(f.readings || {})) {\n  fields[name] = r.v;\n}\nfields.seq = f.seq;\nmsg.payload = [fields, { device_id: f.device_id, domain: f.domain }];\nmsg.measurement = 'telemetry';\nreturn msg;",
+    "outputs": 1,
+    "x": 380,
+    "y": 120,
+    "wires": [["agri-influx-telemetry"]]
+  },
+  {
+    "id": "agri-influx-telemetry",
+    "type": "influxdb out",
+    "z": "agri-tab",
+    "influxdb": "agri-influxdb",
+    "name": "telemetry",
+    "measurement": "telemetry",
+    "precision": "",
+    "retentionPolicy": "",
+    "org": "agri",
+    "bucket": "agri",
+    "x": 640,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "agri-mqtt-alerts",
+    "type": "mqtt in",
+    "z": "agri-tab",
+    "name": "agri/security/alerts",
+    "topic": "agri/security/alerts",
+    "qos": "1",
+    "datatype": "json",
+    "broker": "agri-broker",
+    "x": 150,
+    "y": 220,
+    "wires": [["agri-fn-alerts"]]
+  },
+  {
+    "id": "agri-fn-alerts",
+    "type": "function",
+    "z": "agri-tab",
+    "name": "alert → security point",
+    "func": "const a = msg.payload;\n// severity as a numeric field for easy thresholding in Grafana\nconst sev = a.severity === 'critical' ? 2 : (a.severity === 'warning' ? 1 : 0);\nmsg.payload = [\n  { count: 1, severity_level: sev, detail: a.detail || '' },\n  { device_id: a.device_id || 'unknown', kind: a.kind || 'unknown', severity: a.severity || 'info' }\n];\nmsg.measurement = 'alerts';\nreturn msg;",
+    "outputs": 1,
+    "x": 390,
+    "y": 220,
+    "wires": [["agri-influx-alerts"]]
+  },
+  {
+    "id": "agri-influx-alerts",
+    "type": "influxdb out",
+    "z": "agri-tab",
+    "influxdb": "agri-influxdb",
+    "name": "alerts",
+    "measurement": "alerts",
+    "precision": "",
+    "retentionPolicy": "",
+    "org": "agri",
+    "bucket": "agri",
+    "x": 634,
+    "y": 220,
+    "wires": []
+  },
+  {
+    "id": "agri-broker",
+    "type": "mqtt-broker",
+    "name": "mosquitto",
+    "broker": "localhost",
+    "port": "1883",
+    "clientid": "nodered-agri",
+    "autoConnect": true,
+    "protocolVersion": "5",
+    "keepalive": "60",
+    "cleansession": true
+  },
+  {
+    "id": "agri-influxdb",
+    "type": "influxdb",
+    "hostname": "localhost",
+    "port": "8086",
+    "protocol": "http",
+    "name": "influxdb2",
+    "usetls": false,
+    "influxdbVersion": "2.0",
+    "url": "http://localhost:8086",
+    "rejectUnauthorized": false
+  }
+]

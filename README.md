@@ -132,6 +132,9 @@ flowchart TD
 | `stale` | held-back / delayed replay (timestamp too old) | warning |
 | `rate_anomaly` | flooding / a cloned node shouting over the real one | warning |
 
+
+## Security  →  [Threat model (IEC 62443 + STRIDE)](docs/THREAT_MODEL.md)
+
 ## The two dashboards
 
 One pipeline, two views. The **farm** dashboard is the agronomy picture; the

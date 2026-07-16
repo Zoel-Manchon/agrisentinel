@@ -135,6 +135,8 @@ flowchart TD
 
 ## Security  →  [Threat model (IEC 62443 + STRIDE)](docs/THREAT_MODEL.md)
 
+![mTLS demo](docs/mtls-demo.gif)
+
 ## The two dashboards
 
 One pipeline, two views. The **farm** dashboard is the agronomy picture; the

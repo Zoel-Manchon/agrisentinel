@@ -4,9 +4,10 @@ services:
   mosquitto:
     image: eclipse-mosquitto:2
     ports:
-      - "1883:1883"
+      - "8883:8883"                      # solo TLS mutuo (adiós 1883 anónimo)
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/certs:/mosquitto/certs:ro
       - mosquitto-data:/mosquitto/data
     restart: unless-stopped
 
@@ -21,14 +22,16 @@ services:
 
   influxdb:
     image: influxdb:2.7
-    ports:
-      - "8086:8086"
+    # sin puerto publicado: se accede vía Caddy (TLS). Interno para node-red.
+    expose:
+      - "8086"
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
       DOCKER_INFLUXDB_INIT_USERNAME: agri
       DOCKER_INFLUXDB_INIT_PASSWORD: agri-local-dev-only
       DOCKER_INFLUXDB_INIT_ORG: agri
       DOCKER_INFLUXDB_INIT_BUCKET: agri
+      # token admin solo para bootstrap; crea tokens con scope y rota este (ver README)
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: agri-local-dev-token
     volumes:
       - influxdb-data:/var/lib/influxdb2
@@ -36,14 +39,26 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"                           # detrás de Caddy (TLS)
     environment:
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-change-me}
+      GF_SERVER_ROOT_URL: https://localhost:3443
     volumes:
       - grafana-data:/var/lib/grafana
     depends_on: [influxdb]
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    ports:
+      - "3443:3443"                      # Grafana TLS
+      - "8443:8443"                      # InfluxDB TLS
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on: [grafana, influxdb]
     restart: unless-stopped
 
 volumes:
@@ -51,3 +66,4 @@ volumes:
   nodered-data:
   influxdb-data:
   grafana-data:
+  caddy-data:

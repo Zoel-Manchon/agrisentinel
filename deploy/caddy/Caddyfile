@@ -1,0 +1,15 @@
+# TLS local para el plano de monitoreo (Caddy emite su propia CA interna).
+# Grafana -> https://localhost:3443   ·   InfluxDB -> https://localhost:8443
+{
+  auto_https disable_redirects
+}
+
+localhost:3443 {
+  tls internal
+  reverse_proxy grafana:3000
+}
+
+localhost:8443 {
+  tls internal
+  reverse_proxy influxdb:8086
+}

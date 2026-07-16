@@ -1,0 +1,8 @@
+# nunca subir la PKI (claves privadas)
+mosquitto/certs/
+tls/certs/
+certs/
+*.key
+crl.pem
+index.txt*
+crlnumber*

@@ -322,24 +322,21 @@ The whole project is built so the jump to hardware is mechanical: implement each
 application and security layers stay untouched. Pinouts and drivers per node are
 in [`WIRING.md`](lab/adapters/hw/WIRING.md).
 
-**Phase 1 — real sensors (one node per domain):**
-- [ ] `HwSoilProbe` — capacitive soil moisture (ADC) + DS18B20 soil temp (1-Wire)
-- [ ] `HwCanopy` — BME280 (air temp/humidity/pressure, I2C) + leaf-wetness grid
-- [ ] `HwWaterTank` — HC-SR04 level + YF-S201 flow + analog pH probe
-- [ ] `HwLivestockCollar` — MLX90614 IR body temp + MPU6050 activity (I2C)
-- [ ] `binary_codec.py` implementing `CodecPort` for the LoRa-friendly nodes
+**Phase 1 — real sensors (one node per domain):**  ⏳ *waiting on hardware*
 
-**Phase 2 — transport security:**  ✅ *mostly done*
+**Phase 2 — transport security:**  ✅ **done**
 - [x] MQTT over mutual TLS (8883); per-node client certs (`CN = key_id`),
       individually revocable via CRL — the real access boundary for field IoT
 - [x] InfluxDB & Grafana behind a TLS reverse proxy (Caddy)
-- [ ] Rotate the dev token to scoped, least-privilege, per-writer InfluxDB tokens
+- [x] Scoped, least-privilege, write-only InfluxDB token for the Node-RED writer
 
-**Phase 3 — defence in depth:**
-- [ ] Per-node HMAC keys (the keyring already supports `key_id` rotation/revocation)
-- [ ] Tamper-evident audit log of security events (hash-chain, like `aegis-zero-trust`)
-- [ ] A CI check enforcing "no raw bytes ever enter a frame" as an invariant
-- [ ] Node health panel + per-node Grafana variable for a multi-node fleet
+**Phase 3 — defence in depth:**  ✅ **done**
+- [x] Per-node HMAC keys derived from one master (`key_id = node-id = cert CN`),
+      with rotation and revocation
+- [x] Tamper-evident hash-chain audit log of security events (like `aegis-zero-trust`)
+- [x] CI invariant: an architecture fitness test — the pure core never imports
+      adapters, I/O or crypto, so raw wire bytes never reach the domain
+- [x] Node health panel + per-node `$node` Grafana variable for a multi-node fleet
 
 The signing layer is already identical on hardware — only the sensor reads change.
 

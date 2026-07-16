@@ -1,13 +1,14 @@
 """Ejemplo mínimo: un nodo publica por mTLS. El CN del cert (= key_id)
    viaja como identidad de transporte; el HMAC sigue firmando el frame."""
 import ssl
+
 import paho.mqtt.client as mqtt
 
 NODE_ID = "crop-01"          # == CN del cert == key_id del HMAC
 
 client = mqtt.Client(client_id=NODE_ID)
 client.tls_set(
-    ca_certs=f"certs/ca.crt",
+    ca_certs="certs/ca.crt",
     certfile=f"certs/{NODE_ID}.crt",
     keyfile=f"certs/{NODE_ID}.key",
     tls_version=ssl.PROTOCOL_TLSv1_2,

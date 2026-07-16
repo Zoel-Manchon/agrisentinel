@@ -7,7 +7,7 @@
       "pluginId": "influxdb"
     }
   ],
-  "title": "\ud83d\udee1 AgriSentinel \u00b7 Security (SOC)",
+  "title": "🛡 AgriSentinel · Security (SOC)",
   "uid": "agri-soc",
   "tags": [
     "iot",
@@ -24,13 +24,43 @@
     "to": "now"
   },
   "templating": {
-    "list": []
+    "list": [
+      {
+        "name": "node",
+        "label": "Node",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "${DS_INFLUXDB}"
+        },
+        "definition": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"agri\", tag: \"device_id\")",
+        "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"agri\", tag: \"device_id\")",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "regex": "",
+        "sort": 1,
+        "hide": 0,
+        "skipUrlSync": false
+      }
+    ]
   },
   "panels": [
     {
       "type": "stat",
       "id": 1,
-      "title": "\ud83d\udea8 Total alerts",
+      "title": "🚨 Total alerts",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -90,7 +120,7 @@
     {
       "type": "stat",
       "id": 2,
-      "title": "\u26d4 Critical alerts",
+      "title": "⛔ Critical alerts",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -150,7 +180,7 @@
     {
       "type": "stat",
       "id": 3,
-      "title": "\ud83d\udee1 Perimeter status",
+      "title": "🛡 Perimeter status",
       "gridPos": {
         "h": 5,
         "w": 12,
@@ -428,6 +458,74 @@
         }
       ],
       "description": "Live feed of the most recent security events."
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "🌡 Node health — seconds since last telemetry",
+      "description": "Seconds since each node's last telemetry point. Green = fresh · yellow > 90s · red > 180s (node likely down). Filtered by the $node variable.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 90
+              },
+              {
+                "color": "red",
+                "value": 180
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"agri\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"telemetry\")\n  |> filter(fn: (r) => r.device_id =~ /${node:regex}/)\n  |> group(columns: [\"device_id\"])\n  |> max(column: \"_time\")\n  |> map(fn: (r) => ({ device_id: r.device_id, _value: (float(v: uint(v: now())) - float(v: uint(v: r._time))) / 1000000000.0 }))\n  |> group()\n  |> keep(columns: [\"device_id\", \"_value\"])"
+        }
+      ]
     }
   ]
 }

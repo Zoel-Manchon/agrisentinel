@@ -133,9 +133,20 @@ flowchart TD
 | `rate_anomaly` | flooding / a cloned node shouting over the real one | warning |
 
 
-## Security  →  [Threat model (IEC 62443 + STRIDE)](docs/THREAT_MODEL.md)
+> 🔒 **Threat model:** the full analysis — zones, conduits, STRIDE and IEC 62443
+> Foundational Requirements — lives in [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md).
 
-![mTLS demo](docs/mtls-demo.gif)
+### Transport security — mutual TLS (Phase 2)
+
+MQTT runs over **mutual TLS (8883)**: a project CA issues one client certificate
+per node (`CN = node-id = key_id`), so every node authenticates to the broker and
+is individually revocable — the real access boundary for field IoT. Below, an
+authorized node publishes a signed reading and the gateway receives it; an
+**unauthenticated client (no certificate) is rejected**.
+
+<div align="center">
+<img src="docs/mtls-demo.gif" width="100%" alt="mTLS demo: an authorized node (valid client cert) publishes a reading and the gateway receives it; a client without a certificate is refused by the broker."/>
+</div>
 
 ## The two dashboards
 
@@ -318,11 +329,11 @@ in [`WIRING.md`](lab/adapters/hw/WIRING.md).
 - [ ] `HwLivestockCollar` — MLX90614 IR body temp + MPU6050 activity (I2C)
 - [ ] `binary_codec.py` implementing `CodecPort` for the LoRa-friendly nodes
 
-**Phase 2 — transport security:**
-- [ ] MQTT over TLS (8883); then client certs (mTLS) so each node is individually
-      revocable — the real access boundary for field IoT
-- [ ] InfluxDB & Grafana behind a TLS reverse proxy; rotate the dev token to
-      scoped, least-privilege, per-writer tokens
+**Phase 2 — transport security:**  ✅ *mostly done*
+- [x] MQTT over mutual TLS (8883); per-node client certs (`CN = key_id`),
+      individually revocable via CRL — the real access boundary for field IoT
+- [x] InfluxDB & Grafana behind a TLS reverse proxy (Caddy)
+- [ ] Rotate the dev token to scoped, least-privilege, per-writer InfluxDB tokens
 
 **Phase 3 — defence in depth:**
 - [ ] Per-node HMAC keys (the keyring already supports `key_id` rotation/revocation)

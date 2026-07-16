@@ -7,7 +7,7 @@
       "pluginId": "influxdb"
     }
   ],
-  "title": "\ud83c\udf3e AgriSentinel \u00b7 Farm",
+  "title": "🌾 AgriSentinel · Farm",
   "uid": "agri-farm",
   "tags": [
     "iot",
@@ -23,13 +23,43 @@
     "to": "now"
   },
   "templating": {
-    "list": []
+    "list": [
+      {
+        "name": "node",
+        "label": "Node",
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "${DS_INFLUXDB}"
+        },
+        "definition": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"agri\", tag: \"device_id\")",
+        "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"agri\", tag: \"device_id\")",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "regex": "",
+        "sort": 1,
+        "hide": 0,
+        "skipUrlSync": false
+      }
+    ]
   },
   "panels": [
     {
       "type": "gauge",
       "id": 1,
-      "title": "\ud83c\udf31 Soil moisture",
+      "title": "🌱 Soil moisture",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -94,7 +124,7 @@
     {
       "type": "gauge",
       "id": 2,
-      "title": "\ud83c\udf21 Air temp",
+      "title": "🌡 Air temp",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -159,7 +189,7 @@
     {
       "type": "gauge",
       "id": 3,
-      "title": "\ud83d\udca7 Tank level",
+      "title": "💧 Tank level",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -224,7 +254,7 @@
     {
       "type": "gauge",
       "id": 4,
-      "title": "\ud83d\udc04 Animal temp",
+      "title": "🐄 Animal temp",
       "gridPos": {
         "h": 5,
         "w": 6,
@@ -289,7 +319,7 @@
     {
       "type": "row",
       "id": 10,
-      "title": "\ud83c\udf31 Crops",
+      "title": "🌱 Crops",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -485,7 +515,7 @@
     {
       "type": "row",
       "id": 20,
-      "title": "\ud83d\udca7 Water",
+      "title": "💧 Water",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -653,7 +683,7 @@
     {
       "type": "row",
       "id": 30,
-      "title": "\ud83d\udc04 Livestock",
+      "title": "🐄 Livestock",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -717,7 +747,7 @@
           }
         }
       ],
-      "description": "Stable ~38.6\u00b0C; a fever event pushes it above 40\u00b0C (also a security signal)."
+      "description": "Stable ~38.6°C; a fever event pushes it above 40°C (also a security signal)."
     },
     {
       "type": "timeseries",
@@ -774,7 +804,75 @@
           }
         }
       ],
-      "description": "Day/night rhythm \u2014 high midday, near zero at night."
+      "description": "Day/night rhythm — high midday, near zero at night."
+    },
+    {
+      "id": 33,
+      "type": "stat",
+      "title": "🌡 Node health — seconds since last telemetry",
+      "description": "Seconds since each node's last telemetry point. Green = fresh · yellow > 90s · red > 180s (node likely down). Filtered by the $node variable.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 90
+              },
+              {
+                "color": "red",
+                "value": 180
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"agri\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"telemetry\")\n  |> filter(fn: (r) => r.device_id =~ /${node:regex}/)\n  |> group(columns: [\"device_id\"])\n  |> max(column: \"_time\")\n  |> map(fn: (r) => ({ device_id: r.device_id, _value: (float(v: uint(v: now())) - float(v: uint(v: r._time))) / 1000000000.0 }))\n  |> group()\n  |> keep(columns: [\"device_id\", \"_value\"])"
+        }
+      ]
     }
   ]
 }

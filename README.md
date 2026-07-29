@@ -5,11 +5,6 @@
 **Smart rural IoT lab — crops, water & livestock telemetry with a security layer
 that treats the sensor network as an attack surface.**
 
-![tests](https://img.shields.io/badge/tests-33%20passing-3fb950?style=flat-square&labelColor=0d1117)
-![python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
-![architecture](https://img.shields.io/badge/architecture-hexagonal-111111?style=flat-square)
-![security](https://img.shields.io/badge/security-HMAC%20%2B%20anomaly%20detection-a32d2d?style=flat-square)
-![license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 
 <img src="docs/demo.gif" width="100%" alt="Live agronomy dashboard: a simulated farm day streaming soil, water and livestock telemetry into Grafana."/>
 

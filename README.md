@@ -32,6 +32,26 @@ MicroPython-safe, so the move to real ESP32 nodes is an adapter swap.
 
 ---
 
+## At a glance
+
+|  |  |
+| --- | --- |
+| **What it is** | A rural IoT lab covering crops, water and livestock, with a security layer that treats the sensor network itself as an attack surface. |
+| **The one idea** | The gateway trusts nothing that arrives. Every reading is signed with HMAC and stamped with a sequence and a nonce; frames that fail verification, replay an old sequence, or carry impossible values are rejected **before** they reach the domain — and the rejection is itself telemetry. |
+| **Two views, one pipeline** | Clean telemetry and security alerts travel on separate streams, so the same run feeds an **agronomy** dashboard and a **SOC-style security** dashboard. |
+| **The invariant** | An architecture fitness test in CI proves the pure core imports no adapters, no I/O and no crypto — which is how raw wire bytes are kept from ever reaching the domain. |
+| **Transport** | MQTT over mutual TLS on 8883, per-node client certificates (`CN = key_id`), individually revocable by CRL. |
+| **Size** | **43 tests**, architecture fitness functions included |
+| **Try it** | Console mode needs no infrastructure — see [Quick start](#quick-start-console-no-infra) |
+
+**Contents** — [Why this exists](#why-this-exists) · [Architecture](#architecture) ·
+[The hexagon](#the-hexagon) · [Security model](#security-model) ·
+[The two dashboards](#the-two-dashboards) · [Quick start](#quick-start-console-no-infra) ·
+[Full pipeline](#full-pipeline--docker-node-red-influxdb-grafana) ·
+[Attack playground](#attack-playground) · [Layout](#layout) · [Status](#roadmap--from-sim-to-real-sensors)
+
+---
+
 ## Why this exists
 
 Rural and agricultural IoT is real OT infrastructure — and it's rarely built with
@@ -315,7 +335,7 @@ lab/
 gateway/           verify → detect → forward|alert
 runner/            multi-node sim + attack injection
 deploy/            docker-compose, mosquitto, Node-RED flow, 2 Grafana dashboards
-tests/             33 tests incl. architecture fitness + attack scenarios
+tests/             43 tests incl. architecture fitness + attack scenarios
 ```
 
 ## Roadmap — from sim to real sensors
@@ -324,6 +344,9 @@ The whole project is built so the jump to hardware is mechanical: implement each
 `Hw*` adapter, flip one import in the composition root, and the domain,
 application and security layers stay untouched. Pinouts and drivers per node are
 in [`WIRING.md`](lab/adapters/hw/WIRING.md).
+
+Phases 2 and 3 are done; phase 1 is the only thing left, and it is blocked on parts
+rather than on design.
 
 **Phase 1 — real sensors (one node per domain):**  ⏳ *waiting on hardware*
 

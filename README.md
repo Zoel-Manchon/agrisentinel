@@ -2,6 +2,14 @@
 
 # 🌾 agrisentinel
 
+[![CI](https://github.com/Zoel-Manchon/agrisentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Zoel-Manchon/agrisentinel/actions/workflows/ci.yml)
+![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
+![MQTT](https://img.shields.io/badge/MQTT-660066?style=flat-square&logo=eclipsemosquitto&logoColor=white)
+![InfluxDB](https://img.shields.io/badge/InfluxDB-22ADF6?style=flat-square&logo=influxdb&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white)
+![architecture hexagonal](https://img.shields.io/badge/architecture-hexagonal-1F2A37?style=flat-square)
+![license MIT](https://img.shields.io/badge/license-MIT-2A3340?style=flat-square)
+
 **Smart rural IoT lab — crops, water & livestock telemetry with a security layer
 that treats the sensor network as an attack surface.**
 
